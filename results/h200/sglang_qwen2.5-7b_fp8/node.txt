@@ -1,0 +1,6 @@
+host=d4052 job=12060208 engine=sglang model=Qwen/Qwen2.5-7B-Instruct quant=fp8
+engine_version=0.5.23
+NVIDIA H200, 570.86.15, 143771 MiB
+CPU(s):                             128
+Model name:                         INTEL(R) XEON(R) GOLD 6548Y+
+kv_tokens_main=2195206

@@ -1,0 +1,19 @@
+host=d4054 job=12060008 engine=vllm model=Qwen/Qwen2.5-7B-Instruct quant=bf16
+engine_version=0.34.0
+NVIDIA H200, 570.86.15, 143771 MiB
+CPU(s):                             128
+Model name:                         INTEL(R) XEON(R) GOLD 6548Y+
+host=d4053 job=12060006 engine=vllm model=Qwen/Qwen2.5-7B-Instruct quant=bf16
+engine_version=0.34.0
+NVIDIA H200, 570.86.15, 143771 MiB
+CPU(s):                             128
+Model name:                         INTEL(R) XEON(R) GOLD 6548Y+
+kv_tokens_prefix_on=2241536
+kv_tokens_main=2241536
+kv_tokens_prefix_off=2241536
+host=d4052 job=12060228 engine=vllm model=Qwen/Qwen2.5-7B-Instruct quant=bf16
+engine_version=0.34.0
+NVIDIA H200, 570.86.15, 143771 MiB
+CPU(s):                             128
+Model name:                         INTEL(R) XEON(R) GOLD 6548Y+
+kv_tokens_main=2241536

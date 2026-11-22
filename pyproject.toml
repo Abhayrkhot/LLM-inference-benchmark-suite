@@ -1,0 +1,82 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llmbench"
+version = "1.0.0"
+description = "Load generator and benchmark suite for OpenAI-compatible LLM inference servers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Abhay Khot" }]
+keywords = ["llm", "inference", "benchmark", "vllm", "sglang", "load-testing"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: System :: Benchmark",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "aiohttp>=3.9",
+    "numpy>=1.24",
+]
+
+[project.optional-dependencies]
+# Tokenizer-backed datasets (ShareGPT, token-id prompts) and client-side token counts.
+hf = ["tokenizers>=0.19", "huggingface_hub>=0.23"]
+plot = ["matplotlib>=3.7"]
+fast = ["uvloop>=0.19; sys_platform != 'win32'", "orjson>=3.9"]
+dev = [
+    "pytest>=8",
+    "pytest-asyncio>=0.23",
+    "pytest-cov>=5",
+    "hypothesis>=6.100",
+    "matplotlib>=3.7",
+    "tokenizers>=0.19",
+    "huggingface_hub>=0.23",
+    "ruff>=0.6",
+    "mypy>=1.10",
+]
+
+[project.scripts]
+llmbench = "llmbench.cli:main"
+
+[project.urls]
+Repository = "https://github.com/Abhayrkhot/LLM-inference-benchmark-suite"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llmbench"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM", "RUF", "NPY", "ASYNC", "PERF"]
+ignore = ["RUF001", "RUF002", "RUF003", "PERF203"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["PERF", "SIM905"]
+"scripts/*" = ["PERF"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+files = ["src/llmbench"]
+
+[[tool.mypy.overrides]]
+module = ["matplotlib", "matplotlib.*", "uvloop", "orjson", "tokenizers", "huggingface_hub"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+addopts = "-q"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+markers = ["slow: timing-sensitive tests that take more than a few seconds"]
+
+[tool.coverage.run]
+source = ["llmbench"]
+omit = ["*/plots.py"]

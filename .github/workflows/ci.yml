@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - run: pip install -e ".[dev,fast]"
+      - name: Lint
+        run: |
+          ruff check .
+          ruff format --check .
+      - name: Type check
+        run: mypy
+      - name: Test
+        run: pytest --cov --cov-report=term-missing --cov-fail-under=85
+      - name: README matches results
+        run: python scripts/build_readme.py --check
+      - name: End-to-end against the fake engine
+        run: |
+          llmbench fake-server --mode batch --port 8100 &
+          sleep 2
+          llmbench run --base-url http://127.0.0.1:8100 --model fake-model --vocab-size 32000 \
+            --input-len 256 --output-len 64 -n 200 --rate 40 --slo "ttft<=500ms,tpot<=50ms" \
+            --out /tmp/ci --name smoke
+          llmbench capacity --base-url http://127.0.0.1:8100 --model fake-model --vocab-size 32000 \
+            --input-len 256 --output-len 64 -n 200 --constraints "ttft_p99<=300ms" \
+            --probe-duration 5 --max-probes 5 --tolerance 0.2 --out /tmp/ci --name cap
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t llmbench .
+      - run: docker run --rm llmbench --version
