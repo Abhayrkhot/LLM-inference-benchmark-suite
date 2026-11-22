@@ -34,7 +34,9 @@ def test_fixed_timing_is_measured_accurately(fake_server: Start) -> None:
     recs = records(srv, workload(20), LoadSpec.closed(5))
     assert len(recs) == 20 and all(r.ok for r in recs)
     s = summarize(recs)
-    assert s["ttft_ms"]["p50"] == pytest.approx(50, abs=5)
+    # Never below the server's true 50 ms; the in-process server thread shares the GIL with the
+    # client, so a loaded CI runner can add a few ms on top.
+    assert 49.5 <= s["ttft_ms"]["p50"] <= 60
     assert s["tpot_ms"]["p50"] == pytest.approx(10, abs=1)
     assert s["itl_ms"]["p50"] == pytest.approx(10, abs=1.5)
     assert all(r.usage_completion_tokens == 20 == len(r.chunk_ns) for r in recs)

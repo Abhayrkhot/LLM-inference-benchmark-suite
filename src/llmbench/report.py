@@ -6,6 +6,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from llmbench.metrics import per_request
 from llmbench.results import load_records, load_result
@@ -119,7 +120,12 @@ def sweep_table(rows: Sequence[dict[str, Any]]) -> str:
 
 
 def bootstrap_diff(
-    a: np.ndarray, b: np.ndarray, q: float, *, n_boot: int = 2000, seed: int = 0
+    a: npt.NDArray[np.float64],
+    b: npt.NDArray[np.float64],
+    q: float,
+    *,
+    n_boot: int = 2000,
+    seed: int = 0,
 ) -> tuple[float, float, float]:
     """Relative change of the ``q``-quantile from ``a`` to ``b`` with a 95% percentile-bootstrap
     CI: ``(point, lo, hi)`` as fractions (0.1 = +10%)."""

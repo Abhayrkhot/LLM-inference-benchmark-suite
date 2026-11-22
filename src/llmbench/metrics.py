@@ -27,6 +27,7 @@ from dataclasses import dataclass
 from typing import Any
 
 import numpy as np
+import numpy.typing as npt
 
 from llmbench.types import RequestRecord
 
@@ -40,7 +41,9 @@ def _pkey(p: float) -> str:
     return f"p{p:g}"
 
 
-def quantile_ci(sorted_x: np.ndarray, q: float, conf_z: float = _Z95) -> tuple[float, float] | None:
+def quantile_ci(
+    sorted_x: npt.NDArray[np.float64], q: float, conf_z: float = _Z95
+) -> tuple[float, float] | None:
     """Distribution-free CI for the ``q``-quantile from sorted samples (normal approximation to
     the binomial count of samples below the true quantile). ``None`` if n is too small."""
     n = sorted_x.size
@@ -54,7 +57,7 @@ def quantile_ci(sorted_x: np.ndarray, q: float, conf_z: float = _Z95) -> tuple[f
     return float(sorted_x[lo]), float(sorted_x[hi])
 
 
-def describe(x: np.ndarray, *, ci: bool = True) -> dict[str, Any]:
+def describe(x: npt.NDArray[np.float64], *, ci: bool = True) -> dict[str, Any]:
     if x.size == 0:
         return {"n": 0}
     s = np.sort(x)
@@ -173,7 +176,7 @@ class Constraint:
         return f"{name}{self.op}{self.value:g}{unit}"
 
 
-def per_request(records: Sequence[RequestRecord]) -> dict[str, np.ndarray]:
+def per_request(records: Sequence[RequestRecord]) -> dict[str, npt.NDArray[np.float64]]:
     """Per-request metric arrays for successful requests (ms)."""
     ok = [r for r in records if r.ok and r.first_token_ns]
     ttft = np.array([(r.first_token_ns - r.scheduled_ns) / 1e6 for r in ok])
@@ -193,7 +196,7 @@ def per_request(records: Sequence[RequestRecord]) -> dict[str, np.ndarray]:
     }
 
 
-def _itl(records: Iterable[RequestRecord]) -> np.ndarray:
+def _itl(records: Iterable[RequestRecord]) -> npt.NDArray[np.float64]:
     parts = [
         np.diff(np.frombuffer(r.chunk_ns, dtype=np.int64)) / 1e6
         for r in records
@@ -202,7 +205,7 @@ def _itl(records: Iterable[RequestRecord]) -> np.ndarray:
     return np.concatenate(parts) if parts else np.zeros(0)
 
 
-def meets_slo(m: dict[str, np.ndarray], slo: SLO) -> np.ndarray:
+def meets_slo(m: dict[str, npt.NDArray[np.float64]], slo: SLO) -> npt.NDArray[np.bool_]:
     good = np.ones(m["ttft"].size, dtype=bool)
     if slo.ttft_ms is not None:
         good &= m["ttft"] <= slo.ttft_ms

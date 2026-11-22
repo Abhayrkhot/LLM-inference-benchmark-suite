@@ -6,6 +6,7 @@ import math
 from dataclasses import dataclass, field
 
 import numpy as np
+import numpy.typing as npt
 
 from llmbench.tokenizer import Tokenizer
 from llmbench.types import Request
@@ -64,9 +65,10 @@ class LengthDist:
             raise ValueError(f"unknown length distribution {kind!r}")
         return cls(kind, a, b, lo=lo, hi=hi)
 
-    def sample(self, rng: np.random.Generator, n: int) -> np.ndarray:
+    def sample(self, rng: np.random.Generator, n: int) -> npt.NDArray[np.int64]:
+        x: npt.NDArray[np.float64]
         if self.kind == "fixed":
-            x = np.full(n, self.a)
+            x = np.full(n, self.a, dtype=np.float64)
         elif self.kind == "uniform":
             x = rng.integers(int(self.a), int(self.b) + 1, size=n).astype(float)
         elif self.kind == "lognormal":
@@ -75,7 +77,8 @@ class LengthDist:
             x = rng.lognormal(mu, sigma, size=n)
         else:
             x = rng.normal(self.a, self.b, size=n)
-        return np.clip(np.rint(x), self.lo, self.hi).astype(np.int64)
+        out: npt.NDArray[np.int64] = np.clip(np.rint(x), self.lo, self.hi).astype(np.int64)
+        return out
 
 
 @dataclass

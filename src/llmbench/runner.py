@@ -21,6 +21,7 @@ from dataclasses import dataclass, field
 from typing import Any, Literal, TypeVar
 
 import numpy as np
+import numpy.typing as npt
 
 from llmbench.backends import SamplingOptions, get_backend
 from llmbench.client import dumps, make_session, now_ns, send_request
@@ -67,7 +68,7 @@ class LoadSpec:
 
     @staticmethod
     def open(
-        offsets_s: Sequence[float] | np.ndarray,
+        offsets_s: Sequence[float] | npt.NDArray[np.float64],
         max_concurrency: int | None = None,
         max_duration_s: float | None = None,
     ) -> LoadSpec:

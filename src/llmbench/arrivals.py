@@ -12,6 +12,7 @@ import math
 from collections.abc import Sequence
 
 import numpy as np
+import numpy.typing as npt
 
 __all__ = [
     "arrival_offsets",
@@ -22,12 +23,14 @@ __all__ = [
 ]
 
 
-def poisson_offsets(rate: float, n: int, rng: np.random.Generator) -> np.ndarray:
+def poisson_offsets(rate: float, n: int, rng: np.random.Generator) -> npt.NDArray[np.float64]:
     """Poisson process: exponential gaps with mean ``1/rate``. The first request goes at t=0."""
     return gamma_offsets(rate, 1.0, n, rng)
 
 
-def gamma_offsets(rate: float, cv: float, n: int, rng: np.random.Generator) -> np.ndarray:
+def gamma_offsets(
+    rate: float, cv: float, n: int, rng: np.random.Generator
+) -> npt.NDArray[np.float64]:
     """Renewal process with gamma-distributed gaps: mean ``1/rate``, coefficient of variation
     ``cv``. ``cv=1`` is Poisson, ``cv>1`` is burstier, ``cv<1`` more regular, ``cv=0`` constant.
     """
@@ -44,24 +47,24 @@ def gamma_offsets(rate: float, cv: float, n: int, rng: np.random.Generator) -> n
     shape = 1.0 / (cv * cv)
     gaps = rng.gamma(shape, 1.0 / (rate * shape), size=n)
     gaps[0] = 0.0
-    out: np.ndarray = np.cumsum(gaps)
+    out: npt.NDArray[np.float64] = np.cumsum(gaps)
     return out
 
 
-def uniform_offsets(rate: float, n: int) -> np.ndarray:
+def uniform_offsets(rate: float, n: int) -> npt.NDArray[np.float64]:
     if math.isinf(rate):
         return np.zeros(n)
     return np.arange(n, dtype=float) / rate
 
 
-def trace_offsets(arrivals_s: Sequence[float], time_scale: float = 1.0) -> np.ndarray:
+def trace_offsets(arrivals_s: Sequence[float], time_scale: float = 1.0) -> npt.NDArray[np.float64]:
     """Replay recorded arrival times, shifted to start at 0. ``time_scale=2`` replays 2x faster."""
     a = np.asarray(arrivals_s, dtype=float)
     if a.size == 0:
         return a
     if time_scale <= 0:
         raise ValueError("time_scale must be positive")
-    out: np.ndarray = (a - a.min()) / time_scale
+    out: npt.NDArray[np.float64] = (a - a.min()) / time_scale
     return out
 
 
@@ -74,7 +77,7 @@ def arrival_offsets(
     seed: int = 0,
     trace: Sequence[float] | None = None,
     time_scale: float = 1.0,
-) -> np.ndarray:
+) -> npt.NDArray[np.float64]:
     rng = np.random.default_rng(seed)
     if kind == "poisson":
         return poisson_offsets(rate, n, rng)
